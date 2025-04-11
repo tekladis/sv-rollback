@@ -1,0 +1,5 @@
+.idea
+.vs
+rollback.sln.DotSettings.user
+rollback/bin
+rollback/obj
