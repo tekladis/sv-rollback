@@ -50,15 +50,15 @@ internal sealed class ModEntry : Mod
           */
         configMenu.AddBoolOption(
             mod: this.ModManifest,
-            name: () => "Allow Dirt Decay",
-            tooltip: () => "Allows decay of tilled dirt",
+            name: () => "Disable Dirt Decay",
+            tooltip: () => "Prevents decay of tilled dirt",
             getValue: () => _config.DisableDirtDecay,
             setValue: value => _config.DisableDirtDecay = value);
         
         configMenu.AddBoolOption(
             mod: this.ModManifest,
-            name: () => "Allow Grass Growth",
-            tooltip: () => "Allows grass to spread",
+            name: () => "Disable Grass Growth",
+            tooltip: () => "Prevents grass from spreading",
             getValue: () => _config.DisableGrassGrowth,
             setValue: value => _config.DisableGrassGrowth = value);
     }
