@@ -6,4 +6,5 @@ public sealed class ModConfig
     public bool RepairFences = true;
     public bool DisableDirtDecay = false;
     public bool DisableGrassGrowth = false;
+    public bool DisableWeedGrowth = false;
 }

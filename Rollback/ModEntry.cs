@@ -1,8 +1,8 @@
-﻿using Netcode;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.TerrainFeatures;
+using Object = StardewValley.Object;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Rollback;
@@ -15,11 +15,9 @@ internal sealed class ModEntry : Mod
     {
         _config = helper.ReadConfig<ModConfig>();
         helper.Events.GameLoop.DayEnding += this.OnDayEnding;
-        helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
     
-
     // Configuration menu
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
@@ -38,17 +36,6 @@ internal sealed class ModEntry : Mod
             getValue: () => _config.RepairFences,
             setValue: value => _config.RepairFences = value);
 
-        /*        
-                this.Monitor.Log($"{String.Join(",", allowedLocations.ToArray())}", LogLevel.Alert);
-
-                configMenu.AddTextOption(
-                    mod: this.ModManifest,
-                    name: () => "Fence Locations",
-                    tooltip: () => "Repairs fences at end of the day",
-                    getValue: () => string.Join(",", _config.FenceLocations),
-                    setValue: value => _config.FenceLocations = value.ToString().Split(","),
-                    allowedValues: allowedLocations.ToArray());
-          */
         configMenu.AddBoolOption(
             mod: this.ModManifest,
             name: () => "Disable Dirt Decay",
@@ -62,22 +49,20 @@ internal sealed class ModEntry : Mod
             tooltip: () => "Prevents grass from spreading",
             getValue: () => _config.DisableGrassGrowth,
             setValue: value => _config.DisableGrassGrowth = value);
+        
+        configMenu.AddBoolOption(
+            mod: this.ModManifest,
+            name: () => "Disable Weed Growth",
+            tooltip: () => "Prevents weeds from growing entirely",
+            getValue: () => _config.DisableWeedGrowth,
+            setValue: value => _config.DisableWeedGrowth = value);
     }
-
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
-    {
-        this.Helper.Events.World.TerrainFeatureListChanged += this.OnTerrainFeatureListChanged;
-    }
-
-    // TODO: Extra features
-    /*
-    private void OnDayStarted(object? sender, DayStartedEventArgs e)
-    {
-    }
-*/
+    
     private void OnDayEnding(object? sender, DayEndingEventArgs e)
     {
+        // Apply event handlers to run once
         this.Helper.Events.World.TerrainFeatureListChanged += this.OnTerrainFeatureListChanged;
+        this.Helper.Events.World.ObjectListChanged += this.OnObjectListChanged;
         
         // Repair fences
         foreach (string entry in _config.FenceLocations)
@@ -89,7 +74,23 @@ internal sealed class ModEntry : Mod
                 f.repair();
             }
         }
+        
+    }
 
+    private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
+    {
+        foreach (KeyValuePair<Vector2, Object> p in e.Added)
+        {
+            if (_config.DisableWeedGrowth && p.Value.IsWeeds())
+            {
+                e.Location.removeObject(p.Value.TileLocation, false);
+                
+                // Prevent alterations to in-game stats
+                --Game1.stats.WeedsEliminated;
+            }
+        }
+        
+        this.Helper.Events.World.ObjectListChanged -= this.OnObjectListChanged;
     }
 
     private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
@@ -98,10 +99,8 @@ internal sealed class ModEntry : Mod
         {
             foreach (KeyValuePair<Vector2, TerrainFeature> p in e.Added)
             {
-                if (p.Value is Grass)
-                {
-                    e.Location.removeObject(p.Key, false);
-                }
+                if (p.Value is not Grass) continue;
+                e.Location.removeObject(p.Key, false);
             }
         }
 
@@ -116,7 +115,6 @@ internal sealed class ModEntry : Mod
             }
         }
         
-        // Remove this event since we're done for the day
         this.Helper.Events.World.TerrainFeatureListChanged -= this.OnTerrainFeatureListChanged;
     }
 }
