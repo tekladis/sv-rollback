@@ -1,10 +1,10 @@
 {
   "Name": "Rollback",
   "Author": "tekladis",
-  "Version": "1.0.0",
-  "Description": "Enable or disable various types of decay for your farm",
+  "Version": "1.0.1",
+  "Description": "Rollback various overnight changes to your world",
   "UniqueID": "tekladis.Rollback",
   "EntryDll": "Rollback.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": ["Nexus:33138"]
 }

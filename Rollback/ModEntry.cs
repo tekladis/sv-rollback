@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using Netcode;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.TerrainFeatures;
@@ -16,9 +17,9 @@ internal sealed class ModEntry : Mod
         helper.Events.GameLoop.DayEnding += this.OnDayEnding;
         helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-//        helper.Events.GameLoop.UpdateTicked += this.InitializeSettings;
     }
     
+
     // Configuration menu
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
@@ -78,15 +79,17 @@ internal sealed class ModEntry : Mod
     {
         this.Helper.Events.World.TerrainFeatureListChanged += this.OnTerrainFeatureListChanged;
         
+        // Repair fences
         foreach (string entry in _config.FenceLocations)
         {
             GameLocation? gl = Game1.getLocationFromName(entry);
             if (gl == null) continue;
             foreach (Fence f in gl.Objects.Values.OfType<Fence>())
             {
-                f.setHealth((int)f.maxHealth.Value);
+                f.repair();
             }
         }
+
     }
 
     private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
