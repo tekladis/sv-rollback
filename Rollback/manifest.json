@@ -1,7 +1,7 @@
 {
   "Name": "Rollback",
   "Author": "tekladis",
-  "Version": "1.0.1",
+  "Version": "1.0.2",
   "Description": "Rollback various overnight changes to your world",
   "UniqueID": "tekladis.Rollback",
   "EntryDll": "Rollback.dll",

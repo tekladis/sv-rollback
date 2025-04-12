@@ -56,6 +56,13 @@ internal sealed class ModEntry : Mod
             tooltip: () => "Prevents weeds from growing entirely",
             getValue: () => _config.DisableWeedGrowth,
             setValue: value => _config.DisableWeedGrowth = value);
+        
+        configMenu.AddBoolOption(
+            mod: this.ModManifest,
+            name: () => "Disable Tree Spread",
+            tooltip: () => "Prevents trees from spreading to nearby tiles",
+            getValue: () => _config.DisableTreeSpread,
+            setValue: value => _config.DisableTreeSpread = value);
     }
     
     private void OnDayEnding(object? sender, DayEndingEventArgs e)
@@ -95,12 +102,14 @@ internal sealed class ModEntry : Mod
 
     private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
     {
-        if (_config.DisableGrassGrowth)
+        foreach ((Vector2 pos, TerrainFeature? feature) in e.Added)
         {
-            foreach (KeyValuePair<Vector2, TerrainFeature> p in e.Added)
+            switch (feature)
             {
-                if (p.Value is not Grass) continue;
-                e.Location.removeObject(p.Key, false);
+                case Tree t when _config.DisableTreeSpread && t.growthStage.Value == 0:
+                case Grass when _config.DisableGrassGrowth:
+                    e.Location.removeObject(pos, false);
+                    break;
             }
         }
 
